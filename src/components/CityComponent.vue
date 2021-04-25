@@ -13,11 +13,18 @@ export default {
     return {
       cityName: '未知城市',
       geolocationTimeStamp: 0,
-      allowRelocate: false
+      allowRelocate: true
     }
   },
   mounted () {
-    this.getLocationPos()
+    if (this.$store.state.location === '') {
+      this.allowRelocate = false
+      this.getLocationPos()
+    } else if (this.$store.state.cityInfo === null) {
+      this.getCityInfo()
+    } else {
+      this.cityName = this.$store.state.cityInfo.name
+    }
   },
   unmounted () {
   },
@@ -52,7 +59,7 @@ export default {
           that.cityName = '尝试基于IP获取城市...'
           that.$message({
             message: '无法通过位置服务获取当前位置。' + `[${err.code}]: ${errNameMap[err.code]}`,
-            type: 'error',
+            type: 'warning',
             duration: 3000
           })
           that.getCityNameByIP()
@@ -76,6 +83,7 @@ export default {
       createGetAPICall('https://mc.raiix.com:8082/api/v1/mycity').then((res) => {
         console.log('ip: ')
         console.log(res)
+        this.allowRelocate = true
         that.$store.commit('setLocation', res.locationID)
         that.getCityInfo()
       }).catch((err) => {
