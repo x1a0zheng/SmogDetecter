@@ -19,7 +19,7 @@ export default {
   },
   methods: {
     setIcon (v) {
-      this.$refs.box.style = `background-image:url("${this.$route.path}weather_icons/64/${v}.png");`
+      this.$refs.box.style = `background-image:url("${window.location.origin + process.env.BASE_URL + this.$route.path}weather_icons/64/${v}.png");`
     }
   }
 }
