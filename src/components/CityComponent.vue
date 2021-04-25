@@ -17,6 +17,7 @@ export default {
     }
   },
   mounted () {
+    this.cityName = '正在获取城市...'
     this.getLocationPos()
   },
   unmounted () {
@@ -25,13 +26,22 @@ export default {
   methods: {
     getLocationPos () {
       const that = this
-      this.locationWatcherID = navigator.geolocation.watchPosition(this.onLocationDetected, (err) => {
+      this.locationWatcherID = navigator.geolocation.watchPosition((pos) => {
+        try {
+          this.onLocationDetected(pos)
+        } catch (err) {
+          console.error(err)
+        }
+      }, (err) => {
         console.error('Can\'t get the location: ')
         console.error(err)
-        that.$message({
-          message: '无法获取当前位置。' + err,
-          type: 'error'
-        })
+        try {
+          that.cityName = '获取位置失败'
+          that.$message({
+            message: '无法获取当前位置。' + err,
+            type: 'error'
+          })
+        } catch (_) { }
       })
     },
     onLocationDetected (pos) {
@@ -55,6 +65,7 @@ export default {
             message: '当前位置不知道是哪。',
             type: 'warning'
           })
+          that.cityName = '未知城市'
           that.$store.commit('clearCityInfo')
         }
       }).catch((err) => {
@@ -63,6 +74,7 @@ export default {
           message: '无法获取当前城市信息。' + err,
           type: 'error'
         })
+        that.cityName = '未知城市'
       })
     }
   }
