@@ -91,7 +91,9 @@ export default {
         console.error('Can\'t get current city weather info.' + err)
         that.$message({
           message: '无法获取当前的天气信息。' + err,
-          type: 'error'
+          type: 'error',
+          duration: 10000,
+          showClose: true
         })
         that.weather.feelsLike = 'NA'
         that.weather.text = 'Unknown'
@@ -108,7 +110,9 @@ export default {
         console.error('Can\'t get current city air info.' + err)
         that.$message({
           message: '无法获取当前空气质量信息。' + err,
-          type: 'error'
+          type: 'error',
+          duration: 10000,
+          showClose: true
         })
         that.air.aqi = 'NA'
         that.air.category = 'Unknown'
@@ -160,7 +164,9 @@ export default {
         console.error('Can\'t get future weather info.' + err)
         that.$message({
           message: '无法获取未来天气预报信息。' + err,
-          type: 'error'
+          type: 'error',
+          duration: 10000,
+          showClose: true
         })
         that.futureInfo = []
       })
