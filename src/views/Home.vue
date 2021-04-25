@@ -3,42 +3,31 @@
     <div class="background">
       <div class="gradient">
         <div class="main-container">
-          <div class="city">
-            西安
-          </div>
+          <city-component> </city-component>
 
           <div class="middle-container">
             <div class="temperature-container">
-              <div class="temperature-number"> 12 </div>
+              <div class="temperature-number"> {{ weather.feelsLike }} </div>
               <div class="temperature-sign"> ℃ </div>
             </div>
             <div class="middle-weather-container">
-              <div class="weather-icon"></div>
-              <div class="weather-text">阵雨</div>
+              <weather-icon :icon="weather.icon"></weather-icon>
+              <div class="weather-text"> {{ weather.text }}</div>
             </div>
           </div>
 
           <div class="bottom-container">
-            <div class="tody-aoi">空气指数50 一级</div>
+            <div class="tody-aoi">空气指数{{ air.aqi }} {{ air.category }}</div>
 
             <div class="bottom-container-list">
-              <div class="bottom-container-list-item">
-                <div class="weather-icon"></div>
-                <div>今天 · 晴朗 · 空气指数50</div>
-                <div class="bottom-container-list-item-right">12° / 9°</div>
-              </div>
-
-              <div class="bottom-container-list-item">
-                <div class="weather-icon"></div>
-                <div>明天 · 小雨 · 空气指数500</div>
-                <div class="bottom-container-list-item-right">32° / 8°</div>
-              </div>
-
-              <div class="bottom-container-list-item">
-                <div class="weather-icon"></div>
-                <div>后天 · 暴雨 · 空气指数10</div>
-                <div class="bottom-container-list-item-right">19° / 1°</div>
-              </div>
+              <future-weather-info-item v-for="item in futureInfo" :key="item"
+                :text="item.text"
+                :maxTemp="item.maxTemp"
+                :minTemp="item.minTemp"
+                :dayIcon="item.dayIcon"
+                :nightIcon="item.nightIcon"
+              >
+              </future-weather-info-item>
             </div>
 
             <div class="info-button" @click="$router.push('/info')">天气详情</div>
@@ -50,10 +39,133 @@
 </template>
 
 <script>
-// @ is an alias to /src
+import CityComponent from '@/components/CityComponent.vue'
+import { createGetAPICall } from '@/API'
+import FutureWeatherInfoItem from '@/components/FutureWeatherInfoItem.vue'
+import WeatherIcon from '@/components/WeatherIcon.vue'
 
 export default {
-  name: 'Home'
+  name: 'Home',
+  components: {
+    'city-component': CityComponent,
+    'future-weather-info-item': FutureWeatherInfoItem,
+    'weather-icon': WeatherIcon
+  },
+  data () {
+    return {
+      weather: {
+        feelsLike: '13',
+        text: '神秘天气'
+      },
+      air: {
+        aqi: 3,
+        category: '还行'
+      },
+      futureInfo: []
+    }
+  },
+  computed: {
+    locationPos () {
+      return this.$store.state.locationPos
+    }
+  },
+  watch: {
+    locationPos (v) {
+      if (v != null) {
+        const pos = v.longitude + ',' + v.latitude
+        this.getCurrentCityWeatherInfo(pos)
+        this.getCurrentCityAirInfo(pos)
+        this.getFutureInfo(pos)
+      }
+    }
+  },
+  methods: {
+    getCurrentCityWeatherInfo (pos) {
+      const that = this
+      createGetAPICall('https://devapi.qweather.com/v7/weather/now', {
+        key: this.$store.state.key,
+        location: pos
+      }).then((res) => {
+        that.weather = res.now
+      }).catch((err) => {
+        console.error('Can\'t get current city weather info.' + err)
+        that.$message({
+          message: '无法获取当前的天气信息。' + err,
+          type: 'error'
+        })
+        that.weather.feelsLike = 'NA'
+        that.weather.text = 'Unknown'
+      })
+    },
+    getCurrentCityAirInfo (pos) {
+      const that = this
+      createGetAPICall('https://devapi.qweather.com/v7/air/now', {
+        key: this.$store.state.key,
+        location: pos
+      }).then((res) => {
+        that.air = res.now
+      }).catch((err) => {
+        console.error('Can\'t get current city air info.' + err)
+        that.$message({
+          message: '无法获取当前空气质量信息。' + err,
+          type: 'error'
+        })
+        that.air.aqi = 'NA'
+        that.air.category = 'Unknown'
+      })
+    },
+    dateToString (date) {
+      var m = String(date.getMonth() + 1)
+      if (m.length === 1) {
+        m = '0' + m
+      }
+      var d = String(date.getDate())
+      if (d.length === 1) {
+        d = '0' + d
+      }
+      return date.getFullYear() + '-' + m + '-' + d
+    },
+    getFutureInfo (pos) {
+      const date = new Date()
+      const today = this.dateToString(date)
+
+      date.setDate(date.getDate() + 1)
+      const tomorror = this.dateToString(date)
+
+      date.setDate(date.getDate() + 1)
+      const theDayAfterTomorror = this.dateToString(date)
+
+      const dateNameMap = {}
+      dateNameMap[today] = '今天'
+      dateNameMap[tomorror] = '明天'
+      dateNameMap[theDayAfterTomorror] = '后天'
+
+      const that = this
+      createGetAPICall('https://devapi.qweather.com/v7/weather/3d', {
+        key: this.$store.state.key,
+        location: pos
+      }).then((res) => {
+        var info = []
+        for (const i of res.daily) {
+          info.push({
+            text: dateNameMap[i.fxDate] + ' · ' + i.textDay + '/' + i.textNight,
+            maxTemp: i.tempMax,
+            minTemp: i.tempMin,
+            dayIcon: i.iconDay,
+            nightIcon: i.iconNight
+          })
+        }
+        that.futureInfo = info
+      }).catch((err) => {
+        console.error('Can\'t get future weather info.' + err)
+        that.$message({
+          message: '无法获取未来天气预报信息。' + err,
+          type: 'error'
+        })
+        that.futureInfo = []
+      })
+    }
+  }
 }
 </script>
 
@@ -92,10 +204,6 @@ export default {
   justify-content: space-between;
 }
 
-.city{
-  font-size: 24pt;
-}
-
 .temperature-container{
   margin-top: -150px;
   display: flex;
@@ -118,14 +226,6 @@ export default {
   justify-content: center;
 }
 
-.weather-icon{
-  width: 32px;
-  height: 32px;
-  background-image:url("../assets/weather_icons/64/303.png");
-  background-repeat:no-repeat;
-  background-size:cover;
-}
-
 .tody-aoi{
   width: 100%;
   text-align: left;
@@ -143,21 +243,9 @@ export default {
   margin-top: 15px;
 }
 
-.bottom-container-list-item{
-  display: flex;
-  flex-direction: row;
-  padding: 5px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-
-.bottom-container-list-item-right{
-  margin-left: auto;
-}
-
 .info-button{
   margin-top: 35px;
-  font-size: 24pt;
+  font-size: 16pt;
   width: 200pt;
   height: 50pt;
   line-height: 50pt;
