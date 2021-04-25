@@ -13,7 +13,6 @@ export default {
     return {
       cityName: '未知城市',
       geolocationTimeStamp: 0,
-      locationWatcherID: -1,
       allowRelocate: false
     }
   },
@@ -21,12 +20,10 @@ export default {
     this.getLocationPos()
   },
   unmounted () {
-    navigator.geolocation.clearWatch(this.locationWatcherID)
   },
   methods: {
     relocate () {
       if (this.allowRelocate) {
-        navigator.geolocation.clearWatch(this.locationWatcherID)
         this.getLocationPos()
       }
     },
@@ -35,8 +32,9 @@ export default {
       this.allowRelocate = false
       const that = this
       setTimeout(() => {
-        that.locationWatcherID = navigator.geolocation.watchPosition((pos) => {
-          console.log('yes: ' + pos)
+        navigator.geolocation.getCurrentPosition((pos) => {
+          console.log('yes: ')
+          console.log(pos)
           try {
             this.onLocationDetected(pos)
           } catch (err) {
@@ -61,7 +59,6 @@ export default {
           })
         }, {
           enableHighAccuracy: false,
-          maximumAge: Infinity,
           timeout: 10000
         })
       }, 0)
