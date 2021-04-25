@@ -69,11 +69,11 @@ export default {
       }
       this.allowRelocate = true
       this.geolocationTimeStamp = pos.timestamp
-      this.$store.commit('setLocationPos', pos.coords)
+      this.$store.commit('setLocation', String(pos.coords.longitude) + ',' + String(pos.coords.latitude))
       const that = this
 
       createGetAPICall('https://geoapi.qweather.com/v2/city/lookup', {
-        location: String(pos.coords.longitude) + ',' + String(pos.coords.latitude),
+        location: this.$store.state.location,
         key: this.$store.state.key
       }).then((res) => {
         if (res.location.length > 0) {

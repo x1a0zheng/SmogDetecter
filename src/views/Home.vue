@@ -66,13 +66,12 @@ export default {
   },
   computed: {
     locationPos () {
-      return this.$store.state.locationPos
+      return this.$store.state.location
     }
   },
   watch: {
-    locationPos (v) {
-      if (v != null) {
-        const pos = v.longitude + ',' + v.latitude
+    locationPos (pos) {
+      if (pos != null) {
         this.getCurrentCityWeatherInfo(pos)
         this.getCurrentCityAirInfo(pos)
         this.getFutureInfo(pos)
