@@ -1,0 +1,2 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d0c72f1"],{5011:function(e,c,n){"use strict";n.r(c);var t=n("7a23"),o={class:"weather-info"},r=Object(t["createVNode"])("h1",null,"这是个天气详情页面",-1);function a(e,c){return Object(t["openBlock"])(),Object(t["createBlock"])("div",o,[r])}const s={};s.render=a;c["default"]=s}}]);
+//# sourceMappingURL=chunk-2d0c72f1.113588a4.js.map
