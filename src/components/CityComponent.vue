@@ -49,14 +49,13 @@ export default {
           }
           console.error('Can\'t get the location: ')
           console.error(err.code)
-          that.allowRelocate = true
-          that.cityName = '获取位置失败'
+          that.cityName = '尝试基于IP获取城市...'
           that.$message({
-            message: '无法获取当前位置。' + `[${err.code}]: ${errNameMap[err.code]}`,
+            message: '无法通过位置服务获取当前位置。' + `[${err.code}]: ${errNameMap[err.code]}`,
             type: 'error',
-            duration: 10000,
-            showClose: true
+            duration: 3000
           })
+          that.getCityNameByIP()
         }, {
           enableHighAccuracy: false,
           timeout: 10000
@@ -70,8 +69,29 @@ export default {
       this.allowRelocate = true
       this.geolocationTimeStamp = pos.timestamp
       this.$store.commit('setLocation', String(pos.coords.longitude) + ',' + String(pos.coords.latitude))
+      this.getCityInfo()
+    },
+    getCityNameByIP () {
       const that = this
-
+      createGetAPICall('https://mc.raiix.com:8082/api/v1/mycity').then((res) => {
+        console.log('ip: ')
+        console.log(res)
+        that.$store.commit('setLocation', res.locationID)
+        that.getCityInfo()
+      }).catch((err) => {
+        console.error(err)
+        that.$message({
+          message: '无法通过IP获取城市信息。' + err,
+          type: 'error',
+          duration: 10000,
+          showClose: true
+        })
+        that.allowRelocate = true
+        that.cityName = '获取位置失败'
+      })
+    },
+    getCityInfo () {
+      const that = this
       createGetAPICall('https://geoapi.qweather.com/v2/city/lookup', {
         location: this.$store.state.location,
         key: this.$store.state.key
