@@ -61,7 +61,8 @@ export default {
           })
         }, {
           enableHighAccuracy: false,
-          timeout: 1000
+          maximumAge: Infinity,
+          timeout: 10000
         })
       }, 0)
     },
