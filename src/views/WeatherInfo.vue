@@ -1,20 +1,27 @@
-<template>
-  <div class="weather-info">
+<template >
+  <div>
     <div id="weatherGraph" ref="weatherGraph" :style="{width : '100%', height: '60vh'}"></div>
+    <weather-info-plugin class="plugin" v-bind:weatherData="info"></weather-info-plugin>
   </div>
-  <div>{{dataIndex}}</div>
 </template>
 
 <script>
 import * as echarts from 'echarts'
 import { createGetAPICall } from '@/API'
 
+import WeatherInfoPlugin from '@/components/WeatherInfoPlugin.vue'
+
 export default {
   name: 'WeatherInfo',
   data () {
     return {
-      dataIndex: 0
+      dataIndex: 0,
+      info: null,
+      infoData: []
     }
+  },
+  components: {
+    'weather-info-plugin': WeatherInfoPlugin
   },
   methods: {
     getWeatherData () {
@@ -28,6 +35,7 @@ export default {
     changeTempInfo (event) {
       if (event.batch) {
         this.dataIndex = event.batch[0].dataIndex
+        this.info = this.infoData[event.batch[0].dataIndex]
       }
     }
   },
@@ -35,12 +43,14 @@ export default {
     const req = this.getWeatherData()
     req.then(res => {
       console.log(res)
+      this.infoData = res.daily
       const maxTemp = []; const minTemp = []
       for (const item of res.daily) {
         maxTemp.push(parseInt(item.tempMax))
         minTemp.push(parseInt(item.tempMin))
       }
-      const weatherGraph = this.$refs.weatherGraph
+      // const weatherGraph = this.$refs.weatherGraph
+      const weatherGraph = document.getElementById('weatherGraph')
       const chart = echarts.init(weatherGraph)
       const option = {
         title: {
@@ -100,5 +110,7 @@ export default {
 </script>
 
 <style scoped>
-
+.plugin {
+  margin-top: 50px;
+}
 </style>
