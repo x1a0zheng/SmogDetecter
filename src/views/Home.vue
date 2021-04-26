@@ -66,17 +66,27 @@ export default {
   },
   computed: {
     locationPos () {
-      return this.$store.state.locationPos
+      return this.$store.state.location
     }
   },
   watch: {
-    locationPos (v) {
-      if (v != null) {
-        const pos = v.longitude + ',' + v.latitude
+    locationPos (pos) {
+      if (pos != null) {
         this.getCurrentCityWeatherInfo(pos)
         this.getCurrentCityAirInfo(pos)
         this.getFutureInfo(pos)
       }
+    }
+  },
+  mounted () {
+    if (this.$store.state.homeWeatherInfo) {
+      this.weather = this.$store.state.homeWeatherInfo
+    }
+    if (this.$store.state.homeAirInfo) {
+      this.air = this.$store.state.homeAirInfo
+    }
+    if (this.$store.state.homeFutureInfo) {
+      this.futureInfo = this.$store.state.homeFutureInfo
     }
   },
   methods: {
@@ -87,6 +97,7 @@ export default {
         location: pos
       }).then((res) => {
         that.weather = res.now
+        that.$store.commit('setHomeData', { weather: that.weather })
       }).catch((err) => {
         console.error('Can\'t get current city weather info.' + err)
         that.$message({
@@ -97,6 +108,7 @@ export default {
         })
         that.weather.feelsLike = 'NA'
         that.weather.text = 'Unknown'
+        that.$store.commit('setHomeData', { weather: that.weather })
       })
     },
     getCurrentCityAirInfo (pos) {
@@ -106,6 +118,7 @@ export default {
         location: pos
       }).then((res) => {
         that.air = res.now
+        that.$store.commit('setHomeData', { air: that.air })
       }).catch((err) => {
         console.error('Can\'t get current city air info.' + err)
         that.$message({
@@ -116,6 +129,7 @@ export default {
         })
         that.air.aqi = 'NA'
         that.air.category = 'Unknown'
+        that.$store.commit('setHomeData', { air: that.air })
       })
     },
     dateToString (date) {
@@ -160,6 +174,7 @@ export default {
           })
         }
         that.futureInfo = info
+        that.$store.commit('setHomeData', { futureInfo: that.futureInfo })
       }).catch((err) => {
         console.error('Can\'t get future weather info.' + err)
         that.$message({
@@ -169,6 +184,7 @@ export default {
           showClose: true
         })
         that.futureInfo = []
+        that.$store.commit('setHomeData', { futureInfo: that.futureInfo })
       })
     }
   }
