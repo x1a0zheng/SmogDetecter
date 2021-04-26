@@ -19,11 +19,11 @@ export default {
   },
   methods: {
     getWeatherData () {
-      console.log(this.$store.state.key, this.$store.state.locationPos)
-      const pos = this.$store.state.locationPos
+      console.log(this.$store.state.key, this.$store.state.location)
+      const pos = this.$store.state.location
       return createGetAPICall('https://devapi.qweather.com/v7/weather/3d', {
         key: this.$store.state.key,
-        location: pos.longitude + ',' + pos.latitude
+        location: pos
       })
     },
     changeTempInfo (event) {
