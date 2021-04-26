@@ -1,8 +1,7 @@
 <template>
   <div class="weather-info">
-    <div id="weatherGraph" ref="weatherGraph" :style="{width : '100%', height: '500px'}"></div>
+    <div id="weatherGraph" ref="weatherGraph" :style="{width : '100%', height: '60vh'}"></div>
   </div>
-  <div>Loading....</div>
   <div>{{dataIndex}}</div>
 </template>
 
@@ -27,14 +26,15 @@ export default {
       })
     },
     changeTempInfo (event) {
-      if (event.componentType === 'series') {
-        this.dataIndex = event.dataIndex
+      if (event.batch) {
+        this.dataIndex = event.batch[0].dataIndex
       }
     }
   },
   mounted () {
     const req = this.getWeatherData()
     req.then(res => {
+      console.log(res)
       const maxTemp = []; const minTemp = []
       for (const item of res.daily) {
         maxTemp.push(parseInt(item.tempMax))
@@ -51,18 +51,6 @@ export default {
         },
         legend: {
           data: ['最高气温', '最低气温']
-        },
-        toolbox: {
-          show: true,
-          feature: {
-            dataZoom: {
-              yAxisIndex: 'none'
-            },
-            dataView: { readOnly: false },
-            magicType: { type: ['line', 'bar'] },
-            restore: {},
-            saveAsImage: {}
-          }
         },
         xAxis: {
           type: 'category',
@@ -105,7 +93,7 @@ export default {
         ]
       }
       chart.setOption(option)
-      chart.on('click', 'series', this.changeTempInfo)
+      chart.on('highlight', 'series', this.changeTempInfo)
     })
   }
 }
